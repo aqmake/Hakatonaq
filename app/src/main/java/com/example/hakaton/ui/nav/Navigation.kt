@@ -1,5 +1,6 @@
 package com.example.hakaton.ui.nav
 
+import TeacherLoginScreen
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.hakaton.data.Excursion
+import com.example.hakaton.data.StaffCode
 import com.example.hakaton.ui.screens.ExcursionsScreen
 import com.example.hakaton.ui.screens.LoadingScreen
 import com.example.hakaton.ui.screens.RegUch
@@ -14,13 +16,17 @@ import com.example.hakaton.ui.screens.RegisterScreen
 import com.example.hakaton.ui.screens.RegisterViaCode
 import com.example.hakaton.ui.screens.ScAdmin
 import com.example.hakaton.ui.screens.ScParticipant
+import com.example.hakaton.ui.screens.ScannerScreen
 import com.example.hakaton.ui.screens.StudentsScreen
+import com.example.hakaton.ui.screens.SummaryScreen
 
 @Composable
 fun Naigation() {
+    var fromTeacher by remember { mutableStateOf(false) }
     var navState by remember { mutableStateOf(NavState.Zas) }
     var selectedExcursion by remember { mutableStateOf<Excursion?>(null) }
-    var groupId by remember { mutableStateOf(0L) }
+    var groupId by remember { mutableStateOf(0L)
+    }
     when (navState) {
 
         NavState.Zas -> {
@@ -37,19 +43,26 @@ fun Naigation() {
 
 
         NavState.Participant -> {
-            ScParticipant()
+            ScParticipant(
+                onBack = { navState = NavState.RegViaCode }
+            )
         }
 
         NavState.Admin -> {
             ScAdmin(
-
+                onBack = {
+                    StaffCode.clear()
+                    navState = NavState.Excursions
+                },
+                onScan = { navState = NavState.Scanner },
+                onSummary = { navState = NavState.Summary }
             )
         }
 
         NavState.Excursions -> {
             ExcursionsScreen(
                 onSelect = { selectedExcursion = it; navState = NavState.Log },
-                onBack = { navState = NavState.Zas },
+                onTeach = { navState = NavState.TeacherLogin },
                 onCode = { navState = NavState.RegViaCode }
             )
         }
@@ -80,7 +93,23 @@ fun Naigation() {
         NavState.Students -> {
             StudentsScreen(
                 groupId = groupId,
-                onBack = { navState = NavState.Log }
+                onBack = { navState = if (fromTeacher) NavState.TeacherLogin else NavState.Log }
+            )
+        }
+        NavState.Scanner -> {
+            ScannerScreen(onBack = { navState = NavState.Admin })
+        }
+        NavState.Summary -> {
+            SummaryScreen(onBack = { navState = NavState.Admin })
+        }
+        NavState.TeacherLogin -> {
+            TeacherLoginScreen(
+                onBack = { navState = NavState.Excursions },
+                onGroup = { id ->
+                    groupId = id
+                    fromTeacher = true
+                    navState = NavState.Students
+                }
             )
         }
     }

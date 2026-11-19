@@ -114,7 +114,7 @@ fun RegisterScreen(
                 onValueChange = { vm.school = it },
                 placeholder = {
                     Text(
-                        "введите номер школы",
+                        "введите название школы",
                         color = Color(0xff4E4E4E),
                         fontSize = 14.sp,
                         fontFamily = secondFont

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.hakaton.data.ApiClient
 import com.example.hakaton.data.ErrorResponse
 import com.example.hakaton.data.LoginRequest
+import com.example.hakaton.data.StaffCode
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
@@ -27,9 +28,15 @@ class CodeViewModel : ViewModel() {
             try {
                 val r = ApiClient.api.login(LoginRequest(code.trim()))
                 if (r.isSuccessful) {
-                    when (r.body()?.role) {
-                        "STAFF" -> onAdmin()
-                        "PARTICIPANT" -> onParticipant()
+                    when (r.body()?.role?.uppercase()) {
+                        "STAFF" -> {
+                            StaffCode.save(code.trim())   // вот этот код пойдёт в заголовок
+                            onAdmin()
+                        }
+                        "PARTICIPANT" -> {
+                            Session.participant = r.body()?.participant
+                            onParticipant()
+                        }
                         else -> error = "Неизвестная роль"
                     }
                 } else {
