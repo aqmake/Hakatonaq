@@ -234,7 +234,7 @@ fun ManageExcursionsScreen(
     if (showCreate) {
         var title by remember { mutableStateOf("") }
         var desc by remember { mutableStateOf("") }
-        var date by remember { mutableStateOf("") }
+        var date by remember { mutableStateOf<LocalDate?>(null) }
         var formError by remember { mutableStateOf("") }
 
         AlertDialog(
@@ -244,15 +244,16 @@ fun ManageExcursionsScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(title, { title = it }, label = { Text("Название") }, singleLine = true)
                     OutlinedTextField(desc, { desc = it }, label = { Text("Описание") })
-                    OutlinedTextField(date, { date = it }, label = { Text("Дата (2026-11-19)") }, singleLine = true)
+                    DatePickerField(date, { date = it }, "Дата")
                     if (formError.isNotEmpty()) Text(formError, color = Color.Red, fontSize = 13.sp)
                 }
             },
             confirmButton = {
-                TextButton(onClick = {val d = try { LocalDate.parse(date.trim()) } catch (e: Exception) { null }
+                TextButton(onClick = {
+                    val d = date
                     when {
                         title.isBlank() -> formError = "Введите название"
-                        d == null -> formError = "Дата в формате 2026-11-19"
+                        d == null -> formError = "Выберите дату"
                         else -> vm.create(title.trim(), desc.trim(), d) { showCreate = false }
                     }
                 }) { Text("Создать") }

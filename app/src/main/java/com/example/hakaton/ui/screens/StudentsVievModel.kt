@@ -80,7 +80,7 @@ class StudentsViewModel : ViewModel() {
                 val body = r.body()
                 if (r.isSuccessful && body != null) {
                     item.code = body.passCode
-                    item.status = if (body.checkedIn) "checked_in" else "pending"
+                    item.status = if (body.checkedIn) "Отмечен" else "Ожидается"
                     item.saved = true
                     item.expanded = true
                 } else item.error = "Ошибка: ${r.code()}"

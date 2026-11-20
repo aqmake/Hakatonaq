@@ -83,7 +83,7 @@ fun RegisterViaCode(
                 onValueChange = { vm.code = it },
                 placeholder = {
                     Text(
-                        "например, KV-2020-0017",
+                        "например, KV-2026-0000",
                         color = Color(0xff4E4E4E),
                         fontSize = 14.sp,
                         fontFamily = secondFont
