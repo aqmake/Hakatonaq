@@ -24,6 +24,42 @@ class StudentsViewModel : ViewModel() {
     val students = mutableStateListOf<StudentItem>()
     private var counter = 0L
 
+    var listLoading by mutableStateOf(false)
+        private set
+    var listError by mutableStateOf("")
+        private set
+    private var loadedGroupId = -1L
+
+    // Загрузить участников группы с сервера
+    fun load(groupId: Long) {
+        if (groupId != loadedGroupId) students.clear()
+        loadedGroupId = groupId
+        listLoading = true
+        listError = ""
+        viewModelScope.launch {
+            try {
+                val r = ApiClient.api.getParticipants(groupId)
+                val body = r.body()
+                if (r.isSuccessful && body != null) {
+                    val unsaved = students.filter { !it.saved }
+                    students.clear()
+                    body.forEach { p ->
+                        students.add(StudentItem(counter++).apply {
+                            name = p.fullName
+                            code = p.passCode
+                            status = if (p.checkedIn) "checked_in" else "pending"
+                            saved = true
+                        })
+                    }
+                    students.addAll(unsaved)
+                } else listError = "Ошибка: ${r.code()}"
+            } catch (e: Throwable) {
+                listError = "Нет связи с сервером"
+            }
+            listLoading = false
+        }
+    }
+
     fun addEmpty() {
         students.add(StudentItem(counter++))
     }

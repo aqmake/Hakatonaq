@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,7 @@ fun StudentsScreen(
     vm: StudentsViewModel = viewModel(),
     onBack: () -> Unit
 ) {
+    LaunchedEffect(groupId) { vm.load(groupId) }
     BackHandler { onBack() }
 
     Column(Modifier

@@ -11,6 +11,7 @@ import com.example.hakaton.data.Excursion
 import com.example.hakaton.data.StaffCode
 import com.example.hakaton.ui.screens.ExcursionsScreen
 import com.example.hakaton.ui.screens.LoadingScreen
+import com.example.hakaton.ui.screens.ManageExcursionsScreen
 import com.example.hakaton.ui.screens.RegUch
 import com.example.hakaton.ui.screens.RegisterScreen
 import com.example.hakaton.ui.screens.RegisterViaCode
@@ -50,13 +51,15 @@ fun Naigation() {
 
         NavState.Admin -> {
             ScAdmin(
-                onBack = {
-                    StaffCode.clear()
-                    navState = NavState.Excursions
-                },
+                onBack = { navState = NavState.Excursions },
                 onScan = { navState = NavState.Scanner },
-                onSummary = { navState = NavState.Summary }
+                onSummary = { navState = NavState.Summary },
+                onCreateExcursion = { navState = NavState.ManageExcursions }
             )
+        }
+
+        NavState.ManageExcursions -> {
+            ManageExcursionsScreen(onBack = { navState = NavState.Admin })
         }
 
         NavState.Excursions -> {

@@ -1,5 +1,7 @@
 package com.example.hakaton.ui.screens
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +31,7 @@ import com.example.hakaton.ui.theme.secondFont
 
 private val cardColors = listOf(Color(0xFFC9EBF9), Color(0xFFA8DB6A))
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExcursionsScreen(
     vm: ExcursionsViewModel = viewModel(),
@@ -69,13 +72,16 @@ fun ExcursionsScreen(
         Spacer(Modifier.height(12.dp))
 
 
-        Box(
-            Modifier
+        PullToRefreshBox(
+            isRefreshing = vm.loading,
+            onRefresh = { vm.load() },
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
             when {
-                vm.loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                vm.loading && vm.items.isEmpty() ->
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
                 vm.error.isNotEmpty() -> Column(
                     Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -84,7 +90,6 @@ fun ExcursionsScreen(
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = { vm.load() }) { Text("Повторить") }
                 }
-
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     itemsIndexed(vm.items, key = { _, it -> it.id }) { i, ex ->
                         Column(
