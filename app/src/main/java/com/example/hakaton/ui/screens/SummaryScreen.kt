@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +24,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ private val TextGray = Color(0xFF4E4E4E)
 private val Green = Color(0xFF4E9A2B)
 private val Red = Color(0xFFC0485A)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SummaryScreen(onBack: () -> Unit, vm: SummaryViewModel = viewModel()) {
     BackHandler { onBack() }
@@ -55,7 +59,9 @@ fun SummaryScreen(onBack: () -> Unit, vm: SummaryViewModel = viewModel()) {
             .padding(horizontal = 24.dp)
     ) {
         // Стрелка назад
-        Box(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Box(Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)) {
             IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", tint = Color.Black)
             }
@@ -74,30 +80,44 @@ fun SummaryScreen(onBack: () -> Unit, vm: SummaryViewModel = viewModel()) {
         }
         Spacer(Modifier.height(16.dp))
 
-        when {
-            vm.loading && vm.groups.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            vm.error.isNotEmpty() -> Column(
-                Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(vm.error, color = Color.Red, fontFamily = firstFont)
-                Spacer(Modifier.height(12.dp))
-                Button(onClick = { vm.load() }) { Text("Повторить") }
-            }
-            vm.groups.isEmpty() -> Text("Групп пока нет", fontFamily = firstFont)
-            else -> LazyColumn(
+        // Список с обновлением свайпом вниз
+        PullToRefreshBox(
+            isRefreshing = vm.loading,
+            onRefresh = { vm.load() },
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            LazyColumn(
+                Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp)
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                itemsIndexed(vm.groups, key = { _, g -> g.summary.id }) { i, g ->
-                    GroupCard(i + 1, g, onClick = { vm.toggle(g) })
+                when {
+                    vm.error.isNotEmpty() -> item {
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(vm.error, color = Color.Red, fontFamily = firstFont)
+                            Spacer(Modifier.height(12.dp))
+                            Button(onClick = { vm.load() }) { Text("Повторить") }
+                        }
+                    }
+
+                    vm.groups.isEmpty() && !vm.loading -> item {
+                        Text("Групп пока нет", fontFamily = firstFont)
+                    }
+
+                    else -> itemsIndexed(vm.groups, key = { _, g -> g.summary.id }) { i, g ->
+                        GroupCard(i + 1, g, onClick = { vm.toggle(g) })
+                    }
                 }
             }
         }
     }
 }
+
 @Composable
 private fun GroupCard(number: Int, g: GroupUi, onClick: () -> Unit) {
     Column(
@@ -145,9 +165,11 @@ private fun GroupCard(number: Int, g: GroupUi, onClick: () -> Unit) {
                     g.loading -> Box(Modifier.fillMaxWidth(), Alignment.Center) {
                         CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
                     }
+
                     g.error.isNotEmpty() -> Text(g.error, color = Red, fontFamily = secondFont)
                     g.participants.isEmpty() ->
                         Text("Учеников пока нет", color = TextGray, fontFamily = secondFont)
+
                     else -> g.participants.forEach { p ->
                         Row(
                             Modifier.fillMaxWidth(),
