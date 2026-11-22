@@ -35,8 +35,16 @@ class SummaryViewModel : ViewModel() {
                 val r = ApiClient.api.getGroupsSummary(StaffCode.get())
                 val body = r.body()
                 if (r.isSuccessful && body != null) {
+                    val opened = groups.filter { it.expanded }.map { it.summary.id }.toSet()
                     groups.clear()
-                    groups.addAll(body.map { GroupUi(it) })
+                    body.forEach { s ->
+                        val g = GroupUi(s)
+                        groups.add(g)
+                        if (s.id in opened) {
+                            g.expanded = true
+                            loadParticipants(g)
+                        }
+                    }
                 } else error = "Ошибка: ${r.code()}"
             } catch (e: Exception) {
                 error = "Нет связи с сервером"
