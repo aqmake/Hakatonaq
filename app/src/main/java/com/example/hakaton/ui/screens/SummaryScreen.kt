@@ -38,7 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hakaton.ui.theme.firstFont
 import com.example.hakaton.ui.theme.secondFont
 
-private val CardBlue = Color(0xFFC9EBF9)
+private val CardOrange = Color(0xFFE98A5B)
 private val TextGray = Color(0xFF4E4E4E)
 private val Green = Color(0xFF4E9A2B)
 private val Red = Color(0xFFC0485A)
@@ -104,7 +104,7 @@ private fun GroupCard(number: Int, g: GroupUi, onClick: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(CardBlue)
+            .background(CardOrange)
     ) {
         // Шапка: название, счётчик, стрелка
         Row(
